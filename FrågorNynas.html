@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christoffers Frågequiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('nyna.png');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            color: white;
+        }
+        .question {
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        h1, h2 {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <h1>Christoffers Frågequiz</h1>
+    <div id="questionSelection">
+        <h2>Välj antal frågor:</h2>
+        <button onclick="startQuiz(3)">3 frågor</button>
+        <button onclick="startQuiz(6)">6 frågor</button>
+        <button onclick="startQuiz(12)">12 frågor</button>
+        <button onclick="startQuiz(18)">18 frågor</button>
+        <button onclick="startQuiz(24)">24 frågor</button>
+        <button onclick="startQuiz(30)">30 frågor</button>
+    </div>
+    <div id="quiz" style="display: none;"></div>
+    <button id="submit" style="display: none;">Lämna in svar</button>
+    <div id="results"></div>
+    <button id="restart" style="display: none;" onclick="restartQuiz()">Starta om quizet</button>
+
+    <script>
+        const quizData = [
+            {
+                question: "Vilket år grundades Nynäshamn?",
+                options: ["1901", "1911", "1921", "1931"],
+                correctAnswer: 1
+            },
+            {
+                question: "Vad heter Nynäshamns kommuns största ö?",
+                options: ["Torö", "Öja", "Muskö", "Nåttarö"],
+                correctAnswer: 0
+            },
+            {
+                question: "Vilket företag har ett stort oljeraffinaderi i Nynäshamn?",
+                options: ["Shell", "Preem", "Nynas AB", "Statoil"],
+                correctAnswer: 2
+            },
+            {
+                question: "Vilken färjelinje går från Nynäshamn till Gotland?",
+                options: ["Gotlandsbåten", "Destination Gotland", "Gotlandsfärjan", "Östersjölinjen"],
+                correctAnswer: 1
+            },
+            {
+                question: "Vad heter Nynäshamns största badstrand?",
+                options: ["Nickstabadet", "Ringvägsbadet", "Strandbadet", "Lövhagen"],
+                correctAnswer: 0
+            },
+
+            {
+                question: "Vad heter Nynäshamns lokala bryggeri?",
+                options: ["Nynäs Bryggeri", "Sotholms Bryggeri", "Nynäshamns Ångbryggeri", "Södertörns Bryggeri"],
+                correctAnswer: 2
+            },
+            {
+                question: "Vilken känd svensk författare bodde en tid i Nynäshamn och skrev om staden?",
+                options: ["August Strindberg", "Selma Lagerlöf", "Ivar Lo-Johansson", "Astrid Lindgren"],
+                correctAnswer: 2
+            },
+            {
+                question: "Vad heter den årliga segeltävlingen som arrangeras i Nynäshamn?",
+                options: ["Nynäs Race", "Gotland Runt", "Hyundai Cup", "ÅF Offshore Race"],
+                correctAnswer: 2
+            },
+
+            {
+                question: "Vad heter naturreservatet söder om Nynäshamn?",
+                options: ["Järflotta", "Öja", "Landsort", "Häringe-Hammersta"],
+                correctAnswer: 0
+            },
+            {
+                question: "Vilken typ av fisk är Nynäshamn särskilt känt för?",
+                options: ["Lax", "Strömming", "Torsk", "Sik"],
+                correctAnswer: 1
+            },
+            {
+                question: "Vad heter Nynäshamns största idrottsförening?",
+                options: ["Nynäshamns IF", "IFK Nynäshamn", "Nynäshamns BK", "Sorunda IF"],
+                correctAnswer: 0
+            },
+
+            {
+                question: "Vad heter Nynäshamns lokaltidning?",
+                options: ["Nynäshamns-Posten", "Nynäs Allehanda", "Södertörns Nyheter", "Nynäshamns Tidning"],
+                correctAnswer: 0
+            },
+            {
+                question: "Vilken ö utanför Nynäshamn är känd för sin fyr?",
+                options: ["Torö", "Öja", "Nåttarö", "Muskö"],
+                correctAnswer: 1
+            },
+            {
+                question: "Vad heter Nynäshamns kommunslogan?",
+                options: ["Skärgård, sol och salta bad", "Där stad möter hav", "Porten till skärgården", "Livskvalitet vid havet"],
+                correctAnswer: 2
+            },
+
+            {
+                question: "Vad heter den kända restaurangen på Torö?",
+                options: ["Sjöboden", "Kroken", "Ankaret", "Fyren"],
+                correctAnswer: 1
+            },
+            {
+                question: "Vilken känd svensk konstnär hade sin sommarstuga i Nynäshamn?",
+                options: ["Anders Zorn", "Carl Larsson", "Bruno Liljefors", "Isaac Grünewald"],
+                correctAnswer: 2
+            },
+            {
+                question: "Vad heter Nynäshamns största köpcentrum?",
+                options: ["Nynäs Center", "Sjötelegrafen", "Hamngallerian", "Alkärrsplan"],
+                correctAnswer: 1
+            },
+
+            {
+                question: "Vad heter den årliga musikfestivalen i Nynäshamn?",
+                options: ["Nynäs Rock", "Skärgårdsfestivalen", "Havsfestivalen", "Sommarfesten"],
+                correctAnswer: 1
+            },
+            {
+                question: "Vilken typ av industri var historiskt viktig för Nynäshamns utveckling?",
+                options: ["Textilindustri", "Varvsindustri", "Oljeindustri", "Pappersindustri"],
+                correctAnswer: 2
+            },
+            {
+                question: "Vilket år grundades Kungliga Svenska Segelsällskapet (KSSS)?",
+                options: ["1830", "1850", "1870", "1890"],
+                correctAnswer: 1
+            },
+            {
+                question: "Vem var KSSS första ordförande?",
+                options: ["Kung Oscar I", "Prins August", "Greve Carl Löwenhielm", "Baron Gustaf Åkerhielm"],
+                correctAnswer: 2
+            },
+            {
+                question: "Var ligger KSSS huvudsakliga klubbhus?",
+                options: ["Djurgården", "Sandhamn", "Saltsjöbaden", "Vaxholm"],
+                correctAnswer: 2
+            },
+            {
+                question: "Vilken kunglig person är KSSS nuvarande höge beskyddare?",
+                options: ["Kung Carl XVI Gustaf", "Drottning Silvia", "Kronprinsessan Victoria", "Prins Carl Philip"],
+                correctAnswer: 0
+            },
+            {
+                question: "Vilken färg har KSSS klubbflagga?",
+                options: ["Blå med gult kors", "Gul med blått kors", "Röd med vitt kors", "Vit med blått kors"],
+                correctAnswer: 1
+            },
+
+            {
+                question: "Vilken berömd internationell kappsegling arrangerar KSSS årligen?",
+                options: ["Gotland Runt", "Tjörn Runt", "Öland Runt", "Vättern Runt"],
+                correctAnswer: 0
+            },
+            {
+                question: "Vilket år arrangerade KSSS de olympiska seglingarna?",
+                options: ["1912", "1936", "1956", "1972"],
+                correctAnswer: 0
+            },
+            {
+                question: "Vad heter KSSS ungdomsverksamhet?",
+                options: ["KSSS Junior", "Seglarskolan", "Optimistjolle", "Lilla Båtsman"],
+                correctAnswer: 1
+            },
+            {
+                question: "Vilken typ av båt används i KSSS klassiska kappsegling 'Saltsjöbadsregattan'?",
+                options: ["Drake", "Starbåt", "Laser", "49er"],
+                correctAnswer: 0
+            },
+
+            {
+                question: "Vad heter KSSS medlemstidning?",
+                options: ["Seglarbladet", "KSSS-nytt", "Kryssarklubbaren", "Segel & Motor"],
+                correctAnswer: 1
+            },
+            {
+                question: "Vilken svensk OS-guldmedaljör i segling har varit medlem i KSSS?",
+                options: ["Pelle Petterson", "Freddy Lööf", "Sune Carlsson", "Torben Grael"],
+                correctAnswer: 1
+            },
+
+            {
+                question: "Vilken berömd svensk segelbåtskonstruktör var medlem i KSSS?",
+                options: ["Tore Holm", "Knud Reimers", "Olle Enderlein", "Peter Norlin"],
+                correctAnswer: 0
+            },
+            {
+                question: "Vad heter KSSS årliga långdistanssegling för mindre båtar?",
+                options: ["Lidingö Runt", "Ornö Runt", "Värmdö Runt", "Björkö Runt"],
+                correctAnswer: 1
+            },
+
+            {
+                question: "Vilken båtklass användes i KSSS första kappseglingar på 1800-talet?",
+                options: ["Skärgårdskryssare", "Kosterbåt", "Havskryssare", "Nordisk Folkbåt"],
+                correctAnswer: 1
+            },
+            {
+                question: "Vad heter KSSS årliga kappsegling för klassiska träbåtar?",
+                options: ["Träbåtsfestivalen", "Veteranbåtsregattan", "Classic Yacht Cup", "Sandhamn Classic"],
+                correctAnswer: 3
+            },
+  {
+        question: "Vilket år grundades Lysekil som stad?",
+        options: ["1903", "1913", "1923", "1933"],
+        correctAnswer: 0
+    },
+    {
+        question: "Vad heter den kända badorten i Lysekil?",
+        options: ["Pinnevik", "Slävik", "Fiskebäckskil", "Havsbaden"],
+        correctAnswer: 3
+    },
+    {
+        question: "Vilken industri har historiskt varit viktig för Lysekil?",
+        options: ["Textilindustri", "Fiskeindustri", "Bilindustri", "Gruvindustri"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad heter Lysekils mest kända kyrka?",
+        options: ["Lyse kyrka", "Lysekils kyrka", "Skaftö kyrka", "Brastads kyrka"],
+        correctAnswer: 1
+    },
+
+    {
+        question: "Vad heter den årliga segeltävlingen som arrangeras i Lysekil?",
+        options: ["Lysekil Women's Match", "Lysekil Cup", "Lysekil Regatta", "Lysekil Open"],
+        correctAnswer: 0
+    },
+    {
+        question: "Vilken ö utanför Lysekil är känd för sin fyr?",
+        options: ["Gåsö", "Skaftö", "Stora Kornö", "Gullholmen"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vad heter Lysekils lokaltidning?",
+        options: ["Lysekils-Posten", "Bohusläningen", "Lysekilsbladet", "Västkustkuriren"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilket företag driver oljeraffinaderiet i Lysekil?",
+        options: ["Shell", "Preem", "Statoil", "BP"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad heter naturreservatet norr om Lysekil?",
+        options: ["Stångehuvud", "Gullmarsfjorden", "Näverkärr", "Trossö-Kalvö-Lindö"],
+        correctAnswer: 0
+    },
+    {
+        question: "Vilken fisk är Lysekil särskilt känt för?",
+        options: ["Torsk", "Makrill", "Sill", "Hummer"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vad heter Lysekils största idrottsförening?",
+        options: ["Lysekils FF", "IFK Lysekil", "Slättevalls IK", "Lysekils AIK"],
+        correctAnswer: 3
+    },
+
+    {
+        question: "Vad heter den kända restaurangen på Skaftö?",
+        options: ["Brygghuset", "Slipskjulet", "Fiskeboden", "Gullmarsstrand"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken känd svensk konstnär bodde och verkade i Fiskebäckskil?",
+        options: ["Carl Larsson", "Anders Zorn", "Carl Wilhelmson", "Bruno Liljefors"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vad heter Lysekils största köpcentrum?",
+        options: ["Lysekil Center", "Gallerian Lysekil", "Rosvikstorg", "Kungsgatan Galleria"],
+        correctAnswer: 2
+    },
+
+    {
+        question: "Vad heter den årliga musikfestivalen i Lysekil?",
+        options: ["Lysekil Rock", "Havets Toner", "Skärgårdsfesten", "Lysekil Live"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken typ av berg är Lysekil känt för?",
+        options: ["Sandsten", "Granit", "Kalksten", "Skiffer"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad heter den kända utsiktsplatsen i Lysekil?",
+        options: ["Havsutsikten", "Pinneberget", "Flaggberget", "Slottshöjden"],
+        correctAnswer: 2
+    }, {
+        question: "Vilken fisk kallas för 'havets silver'?",
+        options: ["Lax", "Sill", "Makrill", "Torsk"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad är en 'fluga' inom sportfiske?",
+        options: ["En typ av bete", "En fiskart", "Ett fiskeredskap", "En fisketeknik"],
+        correctAnswer: 0
+    },
+    {
+        question: "Vilken fisk är känd för sin långa vandring uppför floder för att leka?",
+        options: ["Gädda", "Abborre", "Lax", "Öring"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vad menas med 'catch and release' inom sportfiske?",
+        options: ["Att fånga och äta fisken", "Att fånga och släppa tillbaka fisken", "Att fånga fisk med nät", "Att fiska från båt"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken typ av fiske använder man ofta pimpel till?",
+        options: ["Havsfiske", "Isfiske", "Flugfiske", "Trolling"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad är en 'spinnare' inom fiske?",
+        options: ["En typ av fiskespö", "Ett bete som roterar i vattnet", "En fiskart", "En fisketeknik"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken fisk är känd för sitt 'skägg' under hakan?",
+        options: ["Torsk", "Lake", "Gös", "Sik"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad är 'mete' för typ av fiske?",
+        options: ["Fiske med spö och lina från land", "Fiske med nät", "Fiske från båt", "Undervattenfiske"],
+        correctAnswer: 0
+    },
+    {
+        question: "Vilken fisk kallas ibland för 'vattnets varg'?",
+        options: ["Abborre", "Gädda", "Gös", "Lax"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad är en 'håv' inom fiske?",
+        options: ["En typ av fiskekrok", "Ett nät för att landa fisk", "En typ av bete", "En fiskart"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken fisk är känd för sina långa vandringer i Atlanten?",
+        options: ["Torsk", "Makrill", "Ål", "Sill"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vad är 'trolling' för typ av fiske?",
+        options: ["Fiske från land", "Fiske med nät", "Fiske med drag efter båt", "Undervattenfiske"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vilken fisk är känd för sitt platta utseende och båda ögonen på samma sida?",
+        options: ["Abborre", "Gädda", "Flundra", "Sik"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vad är en 'tafs' inom fiske?",
+        options: ["En typ av fiskespö", "En del av linan närmast kroken", "En fiskart", "Ett fiskeredskap"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken fisk är känd för sin röda färg när den leker?",
+        options: ["Abborre", "Gädda", "Lax", "Öring"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vad är 'nattfiske'?",
+        options: ["Fiske under dagtid", "Fiske under natten", "Fiske i mörka vatten", "Fiske efter nattaktiva fiskar"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken fisk kallas ibland för 'havets torsk'?",
+        options: ["Kolja", "Kummel", "Sej", "Lyrtorsk"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vad är en 'kastspö' för typ av fiskespö?",
+        options: ["Ett spö för flugfiske", "Ett spö för mete", "Ett spö för att kasta ut betet", "Ett spö för trolling"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vilken fisk är känd för sin starka kamp och kallas ibland 'sportfiskarnas kung'?",
+        options: ["Gädda", "Lax", "Öring", "Abborre"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad är 'put-and-take' fiske?",
+        options: ["Fiske i naturliga vatten", "Fiske i dammar med utsatt fisk", "Fiske efter utrotningshotade arter", "Fiske med konstgjorda beten"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad står förkortningen IaaS för inom molntjänster?",
+        options: ["Internet as a Service", "Infrastructure as a Service", "Integration as a Service", "Intelligence as a Service"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken av följande är inte en av de tre huvudsakliga molntjänstmodellerna?",
+        options: ["IaaS", "PaaS", "SaaS", "DaaS"],
+        correctAnswer: 3
+    },
+    {
+        question: "Vad är Azure Virtual Machines ett exempel på?",
+        options: ["SaaS", "PaaS", "IaaS", "FaaS"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vad är huvudsyftet med Azure Active Directory?",
+        options: ["Fillagring", "Identitetshantering", "Databastjänst", "Containerorkestrering"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken Azure-tjänst används för att lagra ostrukturerad data?",
+        options: ["Azure SQL Database", "Azure Blob Storage", "Azure Table Storage", "Azure Cosmos DB"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad är Azure Functions ett exempel på?",
+        options: ["IaaS", "PaaS", "SaaS", "Serverless Computing"],
+        correctAnswer: 3
+    },
+    {
+        question: "Vilken Azure-tjänst används för att hantera containrar?",
+        options: ["Azure Virtual Machines", "Azure App Service", "Azure Kubernetes Service", "Azure Functions"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vad är huvudsyftet med Azure DevOps?",
+        options: ["Databashantering", "Nätverksövervakning", "Utveckling och driftsättning", "Virtuella maskiner"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vilken Azure-tjänst används för att skapa och hantera API:er?",
+        options: ["Azure API Management", "Azure Functions", "Azure Logic Apps", "Azure Service Bus"],
+        correctAnswer: 0
+    },
+    {
+        question: "Vad är Azure Cosmos DB?",
+        options: ["En relationsdatabas", "En NoSQL-databas", "Ett fillagringssystem", "En meddelandeköhanterare"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken Azure-tjänst används för att analysera stora datamängder i realtid?",
+        options: ["Azure Analysis Services", "Azure Synapse Analytics", "Azure Stream Analytics", "Azure Data Factory"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vad är huvudsyftet med Azure Monitor?",
+        options: ["Databasadministration", "Övervakning och loggning", "Nätverkssäkerhet", "Applikationsutveckling"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken Azure-tjänst används för att skapa och hantera virtuella nätverk?",
+        options: ["Azure Virtual Network", "Azure ExpressRoute", "Azure CDN", "Azure Traffic Manager"],
+        correctAnswer: 0
+    },
+    {
+        question: "Vad är Azure Key Vault?",
+        options: ["En databastjänst", "En säker lagringsplats för hemligheter", "Ett verktyg för nätverksövervakning", "En containertjänst"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken Azure-tjänst används för att hantera och orkestrera arbetsflöden?",
+        options: ["Azure Functions", "Azure Logic Apps", "Azure Service Bus", "Azure Event Grid"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad är huvudsyftet med Azure Content Delivery Network (CDN)?",
+        options: ["Databasreplikering", "Snabbare innehållsleverans", "Virtuella maskiner", "Identitetshantering"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vilken Azure-tjänst används för att skapa och hantera containeriserade applikationer?",
+        options: ["Azure App Service", "Azure Kubernetes Service", "Azure Virtual Machines", "Azure Functions"],
+        correctAnswer: 1
+    },
+    {
+        question: "Vad är Azure Cognitive Services?",
+        options: ["En databastjänst", "En virtuell maskintjänst", "AI och maskininlärningstjänster", "En nätverkstjänst"],
+        correctAnswer: 2
+    },
+    {
+        question: "Vilken Azure-tjänst används för att hantera IoT-enheter och data?",
+        options: ["Azure IoT Hub", "Azure Service Bus", "Azure Event Hubs", "Azure Stream Analytics"],
+        correctAnswer: 0
+    },
+    {
+        question: "Vad är huvudsyftet med Azure Security Center?",
+        options: ["Databasadministration", "Nätverksövervakning", "Säkerhetshantering och övervakning", "Applikationsutveckling"],
+        correctAnswer: 2
+    },
+
+{
+    question: "I vilket land har Unit4 sitt huvudkontor?",
+    options: ["Sverige", "Nederländerna", "USA", "Storbritannien"],
+    correctAnswer: 1
+},
+{
+    question: "Vad heter Unit4:s huvudsakliga ERP-produkt?",
+    options: ["Unit4 ERP", "Unit4 Business World", "Unit4 Enterprise", "Unit4 Financials"],
+    correctAnswer: 1
+},
+{
+    question: "Vilken bransch fokuserar Unit4 främst på?",
+    options: ["Tillverkning", "Detaljhandel", "Tjänsteföretag", "Sjukvård"],
+    correctAnswer: 2
+},
+{
+    question: "Vad heter Unit4:s AI-assistent?",
+    options: ["Wanda", "Alice", "Emma", "Sophia"],
+    correctAnswer: 0
+},
+
+{
+    question: "Vad är Unit4 People Platform?",
+    options: ["En HR-lösning", "En molnbaserad plattform", "Ett CRM-system", "En mobilapp"],
+    correctAnswer: 1
+},
+{
+    question: "Vilken typ av teknik använder Unit4 för sin mikroservicearkitektur?",
+    options: ["Docker", "Kubernetes", "OpenShift", "Mesos"],
+    correctAnswer: 1
+},
+{
+    question: "Vad heter Unit4:s lösning för professionella tjänsteföretag?",
+    options: ["Unit4 PSA", "Unit4 Services", "Unit4 Consulting", "Unit4 Professional"],
+    correctAnswer: 0
+},
+
+{
+    question: "Vad heter Unit4:s lösning för utbildningssektorn?",
+    options: ["Unit4 Education", "Unit4 Student Management", "Unit4 Campus", "Unit4 Learning"],
+    correctAnswer: 1
+},
+{
+    question: "Vilken teknik använder Unit4 för sin in-memory databas?",
+    options: ["Oracle", "SAP HANA", "Microsoft SQL Server", "PostgreSQL"],
+    correctAnswer: 2
+},
+{
+    question: "Vad heter Unit4:s mobila app för utgiftshantering?",
+    options: ["Unit4 Expenses", "Unit4 Travel", "Unit4 Mobile", "Unit4 Go"],
+    correctAnswer: 0
+},
+
+{
+    question: "Vad heter Unit4:s lösning för ideella organisationer?",
+    options: ["Unit4 NGO", "Unit4 Nonprofit", "Unit4 Charity", "Unit4 Social"],
+    correctAnswer: 1
+},
+{
+    question: "Vilken molnplattform använder Unit4 primärt för sina tjänster?",
+    options: ["Amazon Web Services", "Microsoft Azure", "Google Cloud Platform", "IBM Cloud"],
+    correctAnswer: 1
+},
+{
+    question: "Vad heter Unit4:s integrationsplattform?",
+    options: ["Unit4 Connect", "Unit4 Integration Hub", "Unit4 Bridge", "Unit4 Link"],
+    correctAnswer: 1
+},
+
+{
+    question: "Vad heter Unit4:s lösning för personalhantering?",
+    options: ["Unit4 HR", "Unit4 Talent Management", "Unit4 People", "Unit4 HCM"],
+    correctAnswer: 2
+},
+{
+    question: "Vilken programmeringsteknik använder Unit4 för sin affärslogik?",
+    options: ["Java", "C#", "Python", "JavaScript"],
+    correctAnswer: 1
+},
+{
+    question: "Vad kallas den period då jakt på en viss art är tillåten?",
+    options: ["Jaktsäsong", "Jaktperiod", "Jakttid", "Jaktintervall"],
+    correctAnswer: 2
+},
+{
+    question: "Vad är en 'trofé' inom jakt?",
+    options: ["En jakthund", "Ett gevär", "En del av det fällda djuret som behålls som minne", "En jaktlicens"],
+    correctAnswer: 2
+},
+{
+    question: "Vad är 'pyrsch'?",
+    options: ["En typ av jakthund", "En jaktmetod där jägaren smyger sig på viltet", "Ett jaktgevär", "En typ av villebråd"],
+    correctAnswer: 1
+},
+{
+    question: "Vad är en 'åtel'?",
+    options: ["En typ av fälla", "En plats där man lägger ut mat för att locka vilt", "En jakthund", "Ett jakthorn"],
+    correctAnswer: 1
+},
+{
+    question: "Vad kallas en ung hjort?",
+    options: ["Kalv", "Kid", "Killing", "Lamm"],
+    correctAnswer: 0
+},
+{
+    question: "Vad är 'pass' inom jakt?",
+    options: ["Ett jaktlicens", "En plats där jägaren väntar på vilt", "En typ av ammunition", "En jakthund"],
+    correctAnswer: 1
+},
+{
+    question: "Vad är 'drevjakt'?",
+    options: ["Jakt med bil", "Jakt där hundar driver viltet mot jägarna", "Jakt på natten", "Jakt med pilbåge"],
+    correctAnswer: 1
+},
+{
+    question: "Vad kallas en grupp vildsvin?",
+    options: ["Flock", "Hjord", "Kull", "Fläck"],
+    correctAnswer: 1
+},
+{
+    question: "Vad är en 'bock' inom jakt?",
+    options: ["En hankön av rådjur", "En typ av gevär", "En jakthund", "En jaktmetod"],
+    correctAnswer: 0
+},
+{
+    question: "Vad är 'skjutbänk'?",
+    options: ["En plats att sitta på under jakten", "Ett stöd för geväret vid skjutträning", "En typ av ammunition", "En jaktmetod"],
+    correctAnswer: 1
+},
+{
+    question: "Vad är 'eftersök'?",
+    options: ["Att leta efter vilt före jakten", "Att söka efter skadeskjutet vilt", "Att träna jakthundar", "Att rengöra geväret efter jakt"],
+    correctAnswer: 1
+},
+{
+    question: "Vad kallas en grupp änder?",
+    options: ["Flock", "Svärm", "Kull", "Skock"],
+    correctAnswer: 0
+},
+{
+    question: "Vad är en 'toppfågel'?",
+    options: ["En fågel som sitter högst i trädet", "En rovfågel", "En fågel som jagas", "En fågel som används vid jakt"],
+    correctAnswer: 0
+},
+{
+    question: "Vad är 'vakjakt'?",
+    options: ["Jakt på natten", "Jakt där jägaren sitter stilla och väntar", "Jakt med hund", "Jakt på fåglar"],
+    correctAnswer: 1
+},
+{
+    question: "Vad kallas en hona av kronhjort?",
+    options: ["Ko", "Hind", "Get", "Tacka"],
+    correctAnswer: 1
+},
+{
+    question: "Vad är en 'kula' inom jakt?",
+    options: ["En typ av fälla", "En jakthund", "En ammunition för gevär", "En jaktmetod"],
+    correctAnswer: 2
+},
+{
+    question: "Vad är 'viltvård'?",
+    options: ["Att ta hand om skadade djur", "Åtgärder för att gynna viltets livsmiljöer", "Att stycka viltet efter jakten", "Att träna jakthundar"],
+    correctAnswer: 1
+},
+{
+    question: "Vad är en 'rågång'?",
+    options: ["En typ av jaktmetod", "En gräns mellan jaktmarker", "En stig som viltet ofta använder", "En rad av fällor"],
+    correctAnswer: 1
+},
+{
+    question: "Vad kallas en ung räv?",
+    options: ["Valp", "Killing", "Kulting", "Kid"],
+    correctAnswer: 0
+},
+{
+    question: "Vad är 'avståndsbedömning' inom jakt?",
+    options: ["Att mäta avståndet mellan jägare", "Att bedöma avståndet till viltet", "Att mäta skottavstånd på skjutbanan", "Att bedöma avståndet mellan jaktpass"],
+    correctAnswer: 1
+}
+
+        ];
+
+        let selectedQuestions = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = [];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startQuiz(numQuestions) {
+            document.getElementById('questionSelection').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            document.getElementById('submit').style.display = 'none';
+
+            selectedQuestions = shuffleArray([...quizData]).slice(0, Math.min(numQuestions, quizData.length));
+            currentQuestion = 0;
+            score = 0;
+            userAnswers = [];
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const quizContainer = document.getElementById("quiz");
+            const question = selectedQuestions[currentQuestion];
+            
+            let quizHtml = `<div class="question">
+                <h2>Fråga ${currentQuestion + 1} av ${selectedQuestions.length}</h2>
+                <p>${question.question}</p>`;
+            
+            const shuffledOptions = shuffleArray([...question.options]);
+            for (let i = 0; i < shuffledOptions.length; i++) {
+                const originalIndex = question.options.indexOf(shuffledOptions[i]);
+                quizHtml += `<button onclick="selectAnswer(${originalIndex})">${shuffledOptions[i]}</button>`;
+            }
+            
+            quizHtml += `</div>`;
+            quizContainer.innerHTML = quizHtml;
+        }
+
+        function selectAnswer(answerIndex) {
+            userAnswers[currentQuestion] = answerIndex;
+            if (answerIndex === selectedQuestions[currentQuestion].correctAnswer) {
+                score++;
+            }
+            currentQuestion++;
+            if (currentQuestion < selectedQuestions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            const resultsContainer = document.getElementById("results");
+            let resultsHtml = `<h2>Ditt resultat: ${score} av ${selectedQuestions.length}</h2>`;
+            
+            if (score === selectedQuestions.length) {
+                resultsHtml += `<h3 style="color: green;">Grattis! Du hade alla rätt!</h3>`;
+            }
+            
+            for (let i = 0; i < selectedQuestions.length; i++) {
+                const question = selectedQuestions[i];
+                const userAnswer = userAnswers[i];
+                
+                resultsHtml += `<div class="question" style="margin-bottom: 20px;">
+                    <p><strong>${i + 1}. ${question.question}</strong></p>
+                    <ul style="list-style-type: none; padding-left: 0;">`;
+                
+                for (let j = 0; j < question.options.length; j++) {
+                    const isUserAnswer = j === userAnswer;
+                    const isCorrectAnswer = j === question.correctAnswer;
+                    let style = "";
+                    let icon = "";
+                    
+                    if (isUserAnswer) {
+                        style = isCorrectAnswer ? "color: green;" : "color: red;";
+                        icon = isCorrectAnswer ? "✓" : "✗";
+                    }
+                    
+                    resultsHtml += `<li style="${style}">
+                        ${question.options[j]} ${isUserAnswer ? icon : ""}
+                    </li>`;
+                }
+                
+                resultsHtml += `</ul></div>`;
+            }
+            
+            resultsContainer.innerHTML = resultsHtml;
+            document.getElementById("submit").style.display = "none";
+            document.getElementById("restart").style.display = "block";
+        }
+
+        function restartQuiz() {
+            document.getElementById('questionSelection').style.display = 'block';
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('submit').style.display = 'none';
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('restart').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
